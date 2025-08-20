@@ -1,0 +1,19 @@
+{
+  "photo": "/olivia.jpg",
+  "content": {
+    "mail": {
+      "icon": "fa-solid fa-envelope",
+      "text": "yslin1031@gmail.com",
+      "link": "mailto:yslin1031@gmail.com"
+    },
+    "github": {
+      "icon": "fa-brands fa-github",
+      "text": "olivialin21",
+      "link": "https://github.com/olivialin21"
+    },
+    "birthday": {
+      "icon": "fa-solid fa-cake-candles",
+      "text": "2000/10/31"
+    }
+  }
+}

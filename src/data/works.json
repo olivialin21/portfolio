@@ -1,0 +1,73 @@
+[
+  {
+    "cover": "/work_cover_1.jpg",
+    "title": "觀光旅遊查詢網",
+    "content": {
+      "list": [
+        "25 小時內完成所有前端程式的自我挑戰。",
+        "使用 Vue3 + TypeScript 製作，搭配 TailwindCSS + DaisyUI 樣式框架，使用 Axios 串接 TDX（運輸資料流通服務）API 取得觀光資訊，Swiper 製作輪播功能。"
+      ],
+      "tags": [
+        "Vue3",
+        "TypeScript",
+        "Swiper",
+        "TailwindCSS",
+        "API"
+      ]
+    },
+    "link": "https://travel-info-three.vercel.app/"
+  },
+  {
+    "cover": "/work_cover_2.jpg",
+    "title": "MYJIG 3D",
+    "content": {
+      "list": [
+        "MYJIG 3D 為 3D 建模公司的網站，提供創作者與委託者的媒合服務平台。",
+        "我在本專案中負責全部程式，使用 React 框架製作，總工作天約九天。",
+        "使用 Redux 管理狀態變數，Firebase 製作登入系統及留言儲存，emailJS API 建立寄信功能。"
+      ],
+      "tags": [
+        "React",
+        "Redux",
+        "Firebase",
+        "API",
+        "Bootstrap"
+      ]
+    },
+    "link": "https://myjig-3d.vercel.app/"
+  },
+  {
+    "cover": "/work_cover_3.jpg",
+    "title": "2023 THE F2E - 立委競選官網",
+    "content": {
+      "list": [
+        "此專案是由六角學院所舉辦的 THE F2E 活動的第一關主題「立委競選官網」，使用 React 為框架進行前端開發。",
+        "使用 AOS 製作滾動動畫，Swiper 製作橫式選單，Bootstrap 製作響應式排版。"
+      ],
+      "tags": [
+        "React",
+        "Swiper",
+        "AOS",
+        "Bootstrap"
+      ]
+    },
+    "link": "https://2023-the-f2-e-misson1.vercel.app/"
+  },
+  {
+    "cover": "/work_cover_4.jpg",
+    "title": "LadyM 官網 Redesign",
+    "content": {
+      "list": [
+        "Lady M 官網使用無襯線體，我認為無法彰顯品牌的高貴奢華感，因此在標題及導覽列適當加入襯線體，並且呼應他的品牌 Logo，將重點凸顯出來。",
+        "獨力完成 UI 設計與程式，耗時一天調查原網站及設計版面、一天完成程式及微調設計。",
+        "整體色調使用 Lady M 的品牌 Logo 色，使用原生 CSS 製作 Hover 互動效果及視差滾動。"
+      ],
+      "tags": [
+        "Figma",
+        "HTML",
+        "CSS"
+      ]
+    },
+    "link": "https://olivialin21.github.io/LadyM-Redesign/"
+  }
+]
