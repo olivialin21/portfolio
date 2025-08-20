@@ -10,7 +10,8 @@
 
     <!-- 大螢幕 navbar -->
     <nav
-      class="hidden lg:flex fixed top-[50vh] -translate-y-1/2 right-14 xl:right-16 z-30 pointer-events-auto text-[1.5rem] font-bold text-secondary-700">
+      class="hidden lg:flex fixed top-[50vh] -translate-y-1/2 right-14 xl:right-16 z-30 pointer-events-auto text-[1.5rem] font-bold text-secondary-700"
+      :class="store.loadingFinished ? 'pointer-events-auto' : 'pointer-events-none'">
       <ul ref="navList" class="space-y-2">
         <li v-for="(item, index) in navItems" :key="index">
           <a :href="item.href" class="block cursor-scale pl-4.5"
@@ -36,11 +37,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch, nextTick } from 'vue';
-import { useStateStore } from '@/stores';
+import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+import { useStateStore } from '@/stores';
+import { debounce } from '../utils/debounce';
 gsap.registerPlugin(ScrollTrigger);
 
 const store = useStateStore();
@@ -57,6 +59,9 @@ const showHamburger = ref(false);
 const navList = ref<HTMLElement | null>(null);
 const activeIndicator = ref<HTMLElement | null>(null);
 const hamburgerMenu = ref<HTMLElement | null>(null);
+
+// 儲存 ScrollTrigger 實例以便清理
+let scrollTriggers: ScrollTrigger[] = [];
 
 watch(isOpen, (val) => {
   const el = hamburgerMenu.value;
@@ -99,6 +104,60 @@ const updateNavColor = (isWorks: boolean) => {
   });
 };
 
+// 初始化 ScrollTrigger
+const initScrollTriggers = () => {
+  // 清除之前的 ScrollTrigger
+  scrollTriggers.forEach(trigger => trigger.kill());
+  scrollTriggers = [];
+
+  navItems.forEach((item, index) => {
+    const section = document.querySelector(item.href) as HTMLElement;
+    if (section) {
+      const trigger = ScrollTrigger.create({
+        trigger: section,
+        start: 'top center',
+        end: 'bottom center',
+        onEnter: () => {
+          activeIndex.value = index;
+          moveIndicator(index);
+        },
+        onEnterBack: () => {
+          activeIndex.value = index;
+          moveIndicator(index);
+        }
+      });
+      scrollTriggers.push(trigger);
+    }
+  });
+
+  const worksSection = document.querySelector('#works') as HTMLElement;
+  if (worksSection) {
+    const worksTrigger = ScrollTrigger.create({
+      trigger: worksSection,
+      start: 'top center',
+      end: 'bottom center',
+      onEnter: () => updateNavColor(true),
+      onEnterBack: () => updateNavColor(true),
+      onLeave: () => updateNavColor(false),
+      onLeaveBack: () => updateNavColor(false),
+    });
+    scrollTriggers.push(worksTrigger);
+  }
+};
+
+// 處理視窗大小改變
+const handleResize = debounce(() => {
+  // 延遲執行，確保 DOM 更新完成
+  setTimeout(() => {
+    // 完全重新初始化 ScrollTrigger
+    initScrollTriggers();
+    
+    // 重新計算指示器位置
+    nextTick(() => {
+      moveIndicator(activeIndex.value);
+    });
+  }, 100);
+});
 
 onMounted(() => {
   let initialized = false;
@@ -106,6 +165,10 @@ onMounted(() => {
   if (hamburgerMenu.value) {
     gsap.set(hamburgerMenu.value, { x: 100, autoAlpha: 0 });
   }
+
+  // 添加視窗 resize 監聽
+  window.addEventListener('resize', handleResize);
+
   const unwatch = watch(
     () => store.isLoading,
     async (loading) => {
@@ -120,44 +183,22 @@ onMounted(() => {
         await nextTick();
         moveIndicator(activeIndex.value); // 初始方塊位置
 
-        // ScrollTrigger 設定
-        navItems.forEach((item, index) => {
-          const section = document.querySelector(item.href) as HTMLElement;
-          if (section) {
-            ScrollTrigger.create({
-              trigger: section,
-              start: 'top center',
-              end: 'bottom center',
-              onEnter: () => {
-                activeIndex.value = index;
-                moveIndicator(index);
-              },
-              onEnterBack: () => {
-                activeIndex.value = index;
-                moveIndicator(index);
-              }
-            });
-          }
-
-          const worksSection = document.querySelector('#works') as HTMLElement;
-          if (worksSection) {
-            ScrollTrigger.create({
-              trigger: worksSection,
-              start: 'top center',
-              end: 'bottom center',
-              onEnter: () => updateNavColor(true),
-              onEnterBack: () => updateNavColor(true),
-              onLeave: () => updateNavColor(false),
-              onLeaveBack: () => updateNavColor(false),
-            });
-          }
-        });
+        // 初始化 ScrollTrigger
+        initScrollTriggers();
 
         unwatch();
       }
     },
     { immediate: true }
   );
+});
+
+onUnmounted(() => {
+  // 清理 ScrollTrigger 實例
+  scrollTriggers.forEach(trigger => trigger.kill());
+  
+  // 移除 resize 監聽
+  window.removeEventListener('resize', handleResize);
 });
 </script>
 

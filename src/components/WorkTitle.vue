@@ -34,7 +34,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from "vue";
+import { ref, onMounted, onUnmounted, nextTick } from "vue";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import {
@@ -121,6 +121,8 @@ const initGSAP = () => {
       ease: "none",
       scrollTrigger: {
         trigger: container.value,
+        start: "top bottom",
+        end: "bottom top",
         scrub: true,
       },
     });
@@ -129,18 +131,18 @@ const initGSAP = () => {
 };
 
 // resize 事件
-const handleResize = debounce(() => {
+const handleResize = debounce(async () => {
   updateRepeatedLines();
-
-  // 重新初始化 GSAP
+  await nextTick(); // 確保 DOM 完全更新
   ScrollTrigger.getAll().forEach((st) => st.kill());
-  gsapInitialized = false;
   initGSAP();
-}, 150);
+});
 
-onMounted(() => {
+onMounted(async () => {
   updateRepeatedLines();
+  await nextTick(); // 等 DOM 渲染完成再初始化動畫
   initGSAP();
+
   window.addEventListener("resize", handleResize);
 });
 
