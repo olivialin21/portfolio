@@ -43,44 +43,42 @@ window.addEventListener("resize", handleResize);
 onUnmounted(() => window.removeEventListener("resize", handleResize));
 
 watch(
-  () => state.isLoading,
-  (newVal) => {
-    if (!newVal) {
-      setTimeout(updateCursorVisibility, 500);
-    }
-  }
+  () => state.loadingFinished,
+  (finished) => {
+    if (!finished || !cursor.value) return;
+
+    const cursorEl = cursor.value;
+
+    // 依螢幕大小判斷顯示
+    updateCursorVisibility();
+
+    // 滑鼠移動
+    moveHandler = (e: MouseEvent) => {
+      if (isSmallScreen) return;
+      cursorEl.style.left = e.clientX + "px";
+      cursorEl.style.top = e.clientY + "px";
+    };
+    window.addEventListener("mousemove", moveHandler);
+
+    // hover
+    overHandler = (e: MouseEvent) => {
+      if (isSmallScreen) return;
+      const target = e.target as HTMLElement;
+      if (target.closest(".cursor-scale")) cursorEl.classList.add("grow");
+      if (target.closest(".cursor-invert")) cursorEl.classList.add("grow-big");
+    };
+    outHandler = (e: MouseEvent) => {
+      if (isSmallScreen) return;
+      const target = e.target as HTMLElement;
+      if (target.closest(".cursor-scale")) cursorEl.classList.remove("grow");
+      if (target.closest(".cursor-invert")) cursorEl.classList.remove("grow-big");
+    };
+    document.addEventListener("mouseover", overHandler);
+    document.addEventListener("mouseout", outHandler);
+  },
+  { immediate: true }
 );
 
-onMounted(() => {
-  const cursorEl = cursor.value;
-  if (!cursorEl) return;
-
-  updateCursorVisibility();
-
-  // 滑鼠移動
-  moveHandler = (e: MouseEvent) => {
-    if (isSmallScreen) return; // 平板以下不跟隨
-    cursorEl.style.left = e.clientX + "px";
-    cursorEl.style.top = e.clientY + "px";
-  };
-  window.addEventListener("mousemove", moveHandler);
-
-  // hover 事件（桌機才啟用）
-  overHandler = (e: MouseEvent) => {
-    if (isSmallScreen) return;
-    const target = e.target as HTMLElement;
-    if (target.closest(".cursor-scale")) cursorEl.classList.add("grow");
-    if (target.closest(".cursor-invert")) cursorEl.classList.add("grow-big");
-  };
-  outHandler = (e: MouseEvent) => {
-    if (isSmallScreen) return;
-    const target = e.target as HTMLElement;
-    if (target.closest(".cursor-scale")) cursorEl.classList.remove("grow");
-    if (target.closest(".cursor-invert")) cursorEl.classList.remove("grow-big");
-  };
-  document.addEventListener("mouseover", overHandler);
-  document.addEventListener("mouseout", outHandler);
-});
 
 onUnmounted(() => {
   if (moveHandler) window.removeEventListener("mousemove", moveHandler);
@@ -93,7 +91,8 @@ onUnmounted(() => {
 
 <style scoped>
 .cursor {
-  display: none; /* 初始隱藏，桌機 JS 顯示 */
+  display: none;
+  /* 初始隱藏，桌機 JS 顯示 */
   position: fixed;
   width: 3rem;
   height: 3rem;

@@ -1,5 +1,5 @@
 <template>
-  <div id="about" class="lg:py-16">
+  <div id="about" class="py-16 lg:py-24">
     <div class="text-center lg:text-left">
       <h2
         class="inline-block py-1 px-5 mb-6 bg-brand-500 text-neutral-0 text-[1.5rem] sm:text-[2.25rem] font-bold text-nowrap">

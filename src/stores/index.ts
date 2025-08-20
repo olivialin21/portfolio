@@ -3,10 +3,18 @@ import { ref } from 'vue';
 
 export const useStateStore = defineStore('state', () => {
   const isLoading = ref(true);
+  const loadingFinished = ref(false);
 
   const setLoading = (value: boolean) => {
     isLoading.value = value;
   }
 
-  return { isLoading, setLoading };
+  const setLoadingFinished = (value: boolean) => {
+    loadingFinished.value = value;
+  }
+
+  return {
+    isLoading, setLoading,
+    loadingFinished, setLoadingFinished
+  };
 });

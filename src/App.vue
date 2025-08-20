@@ -5,7 +5,7 @@
     <Outline />
     <Navbar />
     <div class="container mx-auto px-10 lg:px-[3.125rem]">
-      <div class="flex justify-center w-full h-full gap-16 xl:gap-20 2xl:gap-24 mb-16 md:mb-24">
+      <div class="flex justify-center w-full h-full gap-16 xl:gap-20 2xl:gap-24">
         <div class="hidden lg:block shrink-0">
           <Polaroid :decorate="true" class="sticky top-[50vh] -translate-y-1/2 -rotate-3" />
         </div>
@@ -36,9 +36,33 @@ import Works from "@/sections/Works.vue";
 const store = useStateStore();
 
 onMounted(() => {
-  setTimeout(() => {
-    store.setLoading(false);
-  }, 1000);
+  const images = Array.from(document.images);
+
+  // 最少 loading 時間 1000ms
+  const minLoading = new Promise((resolve) => setTimeout(resolve, 1000));
+
+  if (images.length === 0) {
+    // 沒有圖片就直接等待最少 loading 時間
+    minLoading.then(() => store.setLoading(false));
+  } else {
+    // 包裝每張圖片的 load / error
+    const imagePromises = images.map(
+      (img) =>
+        new Promise<void>((resolve) => {
+          if (img.complete) {
+            resolve();
+          } else {
+            img.addEventListener("load", () => resolve());
+            img.addEventListener("error", () => resolve());
+          }
+        })
+    );
+
+    // 等圖片與最少 loading 時間都完成
+    Promise.all([minLoading, ...imagePromises]).then(() => {
+      store.setLoading(false);
+    });
+  }
 });
 
 watch(
@@ -49,6 +73,7 @@ watch(
     } else {
       window.scrollTo(0, 0);
       setTimeout(() => {
+        store.setLoadingFinished(true);
         document.body.classList.remove("no-scroll");
         document.documentElement.style.scrollBehavior = "smooth";
       }, 1500);
