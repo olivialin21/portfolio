@@ -55,10 +55,11 @@ portfolio/
 │  ├─ assets/            # 圖片與樣式資源
 │  ├─ sections/          # 頁面區塊或主要版面組件
 │  ├─ stores/            # Pinia 狀態管理
+│  ├─ utils/             # 工具函式     
 │  ├─ App.vue
-│  └─ main.ts
+│  ├─ main.ts
+│  └─ style.css
 ├─ public/
 ├─ vite.config.ts
 └─ package.json
-
 ```
