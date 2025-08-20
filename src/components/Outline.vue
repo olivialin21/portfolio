@@ -6,6 +6,7 @@
 import { ref, watch, onMounted, onUnmounted } from 'vue';
 import { useStateStore } from '@/stores';
 import { gsap } from 'gsap';
+import { debounce } from '@/utils/debounce';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 gsap.registerPlugin(ScrollTrigger);
 
@@ -18,14 +19,6 @@ let borderTarget = 30;
 
 const updateBorderTarget = () => {
   borderTarget = window.innerWidth >= 1280 ? 30 : 20;
-};
-
-const debounce = (fn: Function, delay: number) => {
-  let timer: number | null = null;
-  return (...args: any[]) => {
-    if (timer) clearTimeout(timer);
-    timer = window.setTimeout(() => fn(...args), delay);
-  };
 };
 
 onMounted(() => {
@@ -73,7 +66,7 @@ onMounted(() => {
               ease: 'power2.out',
             });
           }
-        }, 150);
+        });
 
         window.addEventListener('resize', handleResize);
 

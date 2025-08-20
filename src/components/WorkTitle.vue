@@ -1,19 +1,32 @@
 <template>
   <div ref="container" class="relative w-full overflow-hidden">
     <!-- 每一行 -->
-    <div v-for="(line, idx) in repeatedLines" :key="idx" class="text-line" :class="`${bgColors[idx]} line${idx + 1}`">
+    <div
+      v-for="(line, idx) in repeatedLines"
+      :key="idx"
+      class="text-line"
+      :class="`${bgColors[idx]} line${idx + 1}`"
+    >
       <span class="inline-flex items-center" :style="{ gap: idx === 2 ? iconGap : textGap }">
         <!-- 前兩行文字 -->
         <template v-if="idx < 2">
-          <span v-for="(word, wIdx) in line" :key="`${word}-${wIdx}`" :class="getWordClass(wIdx, idx)">
+          <span
+            v-for="(word, wIdx) in line"
+            :key="`${word}-${wIdx}`"
+            :class="getWordClass(wIdx, idx)"
+          >
             {{ word }}
           </span>
         </template>
 
         <!-- 第三行 icon -->
         <template v-else>
-          <font-awesome-icon v-for="(icon, iIdx) in line" :key="`${icon}-${iIdx}`" :icon="icon"
-            class="text-4xl sm:text-5xl md:text-7xl text-neutral-0" />
+          <font-awesome-icon
+            v-for="(icon, iIdx) in line"
+            :key="`${icon}-${iIdx}`"
+            :icon="icon"
+            class="text-4xl sm:text-5xl md:text-7xl text-neutral-0 icon-item"
+          />
         </template>
       </span>
     </div>
@@ -21,7 +34,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, watch } from "vue";
+import { ref, onMounted, onUnmounted } from "vue";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import {
@@ -48,55 +61,58 @@ const lines = [
 ];
 
 // 底色
-const bgColors = [
-  "bg-brand-500",
-  "bg-secondary-700",
-  "bg-secondary-400"];
+const bgColors = ["bg-brand-500", "bg-secondary-700", "bg-secondary-400"];
 
 // 間距
 const textGap = "2rem";
 const iconGap = "1rem";
 
-// 監控視窗寬度
-const windowWidth = ref(window.innerWidth);
-
-// 防抖 resize
-let resizeTimeout: ReturnType<typeof setTimeout> | undefined;
-const updateWidth = () => {
-  clearTimeout(resizeTimeout);
-  resizeTimeout = setTimeout(() => {
-    windowWidth.value = window.innerWidth;
-  }, 150);
+// 防抖函式
+const debounce = (fn: Function, delay = 150) => {
+  let timer: number | null = null;
+  return (...args: any[]) => {
+    if (timer) clearTimeout(timer);
+    timer = window.setTimeout(() => fn(...args), delay);
+  };
 };
 
 // 交錯 class：filled / outlined
 const getWordClass = (wIdx: number, lineIdx: number) =>
   wIdx % 2 === 0 ? `filled line${lineIdx + 1}` : `outlined line${lineIdx + 1}`;
 
-// 用 computed 預先生成「重複後的行內容」
-const repeatedLines = computed(() => {
-  return lines.map((items, idx) => {
+// 重複行內容
+const repeatedLines = ref<Array<any>>([]);
+
+const updateRepeatedLines = () => {
+  if (!container.value) return;
+
+  repeatedLines.value = lines.map((items, idx) => {
     if (idx === 2) {
-      // 第三行 icon：僅生成可視範圍 icon
-      if (!container.value) return [];
-      const containerWidth = container.value.clientWidth;
-      const iconSize = 64; // 假設每個 icon 寬度 64px
+      // 第三行 icon
+      const containerWidth = container.value!.clientWidth;
+
+      // 嘗試抓第一個 icon 的寬度
+      const sampleIcon = container.value
+        ? container.value.querySelector(".text-line:nth-child(3) .icon-item") as HTMLElement
+        : null;
+      const iconSize = sampleIcon ? sampleIcon.getBoundingClientRect().width : 64;
+
       const gapSize = parseInt(iconGap) || 0;
-      const visibleCount = Math.ceil(containerWidth / (iconSize + gapSize)) * 2; // 乘 2 避免滾動時空白
+      const visibleCount = Math.ceil(containerWidth / (iconSize + gapSize)) * 2;
+
       return Array.from({ length: visibleCount }, (_, i) => items[i % items.length]);
     } else {
       const minRepeat = 20;
       return Array.from({ length: minRepeat }, (_, i) => items[i % items.length]);
     }
   });
-});
+};
 
 let gsapInitialized = false;
 
 // 初始化 GSAP 動畫
 const initGSAP = () => {
-  if (!container.value || gsapInitialized) return;
-  gsapInitialized = true;
+  if (!container.value) return;
 
   const els = container.value.querySelectorAll(".text-line");
   els.forEach((el, idx) => {
@@ -109,15 +125,27 @@ const initGSAP = () => {
       },
     });
   });
+  gsapInitialized = true;
 };
 
-onMounted(() => {
-  window.addEventListener("resize", updateWidth);
+// resize 事件
+const handleResize = debounce(() => {
+  updateRepeatedLines();
+
+  // 重新初始化 GSAP
+  ScrollTrigger.getAll().forEach((st) => st.kill());
+  gsapInitialized = false;
   initGSAP();
+}, 150);
+
+onMounted(() => {
+  updateRepeatedLines();
+  initGSAP();
+  window.addEventListener("resize", handleResize);
 });
 
 onUnmounted(() => {
-  window.removeEventListener("resize", updateWidth);
+  window.removeEventListener("resize", handleResize);
   ScrollTrigger.getAll().forEach((st) => st.kill());
 });
 </script>
